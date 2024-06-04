@@ -1,0 +1,40 @@
+SELECT * FROM `messages` JOIN groups ON groups.uuid = messages.group_id GROUP BY groups.uuid ORDER By messages.timestamp DESC
+
+SELECT * FROM `groups` INNER JOIN messages ON groups.uuid = messages.group_id GROUP BY groups.uuid ORDER By messages.timestamp DESC
+
+
+where (groups.user1_uuid = '31f0c341b5e5450eba10088c45b7c558' or user2_uuid = '31f0c341b5e5450eba10088c45b7c558')
+
+            print("groups", groups)
+            print("groups", groups.query)
+            print("groups", groups.count())
+            print("groups", groups[0].messages_set.count())
+            print("groups", dir(groups[0].messages_set))
+            print("groups", dir(groups[0].messages_set.all()[1]))
+            print("groups", groups[0].messages_set.all()[2].content)
+            print("groups", groups[0].messages_set.all()[3].content)
+            # for group in dir(groups[0].messages_set.all()[1]):
+            #     print(group)
+
+
+            # groups = Groups.objects.filter(Q(user1_uuid=str(user_uuid)) | Q(user2_uuid=str(user_uuid)))
+            # print("groups", groups)
+            # for group in groups:
+            #     message = Messages.objects.filter(group = group.uuid).order_by('-timestamp')[:1]
+            #     print("query", message.query)
+            #     print("messages", message.first())
+            #     if message.first() is not None:
+            #         print("message", dir(message.first()))
+            #         print("message", message.first().timestamp)
+            #     returnList.append({
+            #         "group_uuid": str(group.uuid),
+            #         "last_post": message.first().timestamp if message.first() is not None else ""
+            #     })
+            #     print("returnList", returnList)
+
+
+TO DO
+
+online presence
+notification system
+declarative programming
