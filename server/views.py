@@ -254,6 +254,37 @@ def message(request, group_uuid):
             "message": "successfully sent"
         }, status=200)
     
+@sync_to_async
+def getGroupParticipants(group_uuid):
+    # GET THE GROUP PARTICIPANTS, LOOP THROUGH IT AND CHECK REDIS WHETHER USER HAS KEY DOWN
+    typing_participants = []
+    group_participants = Group_participants.objects.filter(group_id=group_uuid).all()
+    for group_participant in group_participants:
+        user = str(group_participant.user_id).replace("-", "")
+        is_typing = redisInstance.hget("typing", f"{group_uuid}_{user}")
+        if is_typing:
+            typing_participants.append(str(group_participants.user_id))
+    return typing_participants
+
+@sync_to_async
+def getLatestMessage(group_uuid, user_id):
+    # IF MESSAGE STATUS IS NOT SEEN, CHECK IF ANOTHER USER IS STREAMING, IF YES, UPDATE STATUS TO SEEN
+    messages = Messages.objects.filter(group_id=group_uuid).all().order_by('-id')[:10]
+    output = []
+    print("messages", messages)
+    for message in messages:
+        if message.status != MessageStatus.Seen:
+            group = message.group
+            if group.type == GroupType.OneToOne and str(message.sender_id).replace('-', '') != user_id:
+                message.status = int(MessageStatus.Seen)
+                #message.save()
+    
+        output.append({
+            "message": message.content,
+            "status": message.status,
+            "timestamp": message.timestamp
+        })
+    return output
 
 async def stream(request):
     """
@@ -263,35 +294,29 @@ async def stream(request):
     group_uuid = request.GET.get("group_uuid")
     async def event_stream():
         while True:
-            messages = []
-            typing_participants = []
+            typing_participants = await getGroupParticipants(group_uuid)
+            messages = await getLatestMessage(group_uuid, user_id)
 
-            # get the group participant, loop through it and check redis whether user is key down
-            async for group_participants in Group_participants.objects.filter(group_id=group_uuid).all():
-                user = str(group_participants.user_id).replace("-", "")
-                is_typing = redisInstance.hget("typing", f"{group_uuid}_{user}")
-                if is_typing:
-                    typing_participants.append(str(group_participants.user_id))
-
-            async for message in Messages.objects.filter(group_id=group_uuid).all().order_by('-id')[:10]:
-                # IF MESSAGE STATUS IS NOT SEEN, CHECK IF ANOTHER USER IS STREAMING, IF YES, UPDATE STATUS TO SEEN
-                if message.status != MessageStatus.Seen:
-                    getGroupType = sync_to_async(lambda e: e.group, thread_sensitive=True)
-                    group = await getGroupType(message)
-                    if group.type == GroupType.OneToOne and str(message.sender_id).replace('-', '') != user_id:
-                        message.status = int(MessageStatus.Seen)
-                        save = sync_to_async(lambda message: message.save(), thread_sensitive=True)
-                        await save(message)
+            # async for message in Messages.objects.filter(group_id=group_uuid).all().order_by('-id')[:10]:
+            #     # IF MESSAGE STATUS IS NOT SEEN, CHECK IF ANOTHER USER IS STREAMING, IF YES, UPDATE STATUS TO SEEN
+            #     if message.status != MessageStatus.Seen:
+            #         getGroupType = sync_to_async(lambda e: e.group, thread_sensitive=True)
+            #         group = await getGroupType(message)
+            #         if group.type == GroupType.OneToOne and str(message.sender_id).replace('-', '') != user_id:
+            #             message.status = int(MessageStatus.Seen)
+            #             save = sync_to_async(lambda message: message.save(), thread_sensitive=True)
+            #             await save(message)
                     
-                messages.append({
-                    "message": message.content,
-                    "status": message.status,
-                    "timestamp": message.timestamp
-                })
-                output = {
-                    "messages": messages,
-                    "typing": typing_participants
-                }
+            #     messages.append({
+            #         "message": message.content,
+            #         "status": message.status,
+            #         "timestamp": message.timestamp
+            #     })
+            output = {
+                "messages": messages,
+                "typing": typing_participants
+            }
+
 
             yield f'data: {output} \n\n'
             await asyncio.sleep(1)
