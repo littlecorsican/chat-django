@@ -31,7 +31,7 @@ DEBUG = True
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
+        "LOCATION": "redis://default:1234567@redis-10685.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com:10685",
         "TIMEOUT": 10
     }
 }
@@ -86,7 +86,11 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ALLOWED_HOSTS = [
     "http://localhost:3000",
     "http://localhost:8000",
-    "127.0.0.1"
+    "127.0.0.1",
+    "http://127.0.0.1:8000",
+    "http://13.250.54.152:8000",
+    "https://13.250.54.152:8000",
+
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
