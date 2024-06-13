@@ -75,12 +75,22 @@ ROOT_URLCONF = 'chat.urls'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:8000',
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "127.0.0.1",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
+    "http://13.250.54.152:8000",
+    "https://13.250.54.152:8000",
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     "http://localhost:3000",
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "127.0.0.1",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
+    "http://13.250.54.152:8000",
+    "https://13.250.54.152:8000",
 ]
 
 ALLOWED_HOSTS = [
@@ -88,6 +98,7 @@ ALLOWED_HOSTS = [
     "http://localhost:8000",
     "127.0.0.1",
     "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
     "http://13.250.54.152:8000",
     "https://13.250.54.152:8000",
 
